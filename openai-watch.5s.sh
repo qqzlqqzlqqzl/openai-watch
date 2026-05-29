@@ -75,14 +75,29 @@ write_failure_streak() {
 }
 
 probe_openai() {
-  curl \
-    --silent \
-    --show-error \
-    --location \
-    --output /dev/null \
-    --max-time "$TIMEOUT" \
-    --write-out "%{http_code} %{time_total} %{remote_ip}" \
-    "$TARGET_URL" 2>&1
+  local error_file
+  local output
+  local status
+
+  error_file="$(mktemp "${TMPDIR:-/tmp}/openai-watch-curl.XXXXXX")"
+
+  output="$(
+    curl \
+      --silent \
+      --show-error \
+      --location \
+      --output /dev/null \
+      --max-time "$TIMEOUT" \
+      --write-out "%{http_code} %{time_total} %{remote_ip}" \
+      "$TARGET_URL" 2>"$error_file"
+  )"
+  status=$?
+
+  printf "status=%s\n" "$status"
+  printf "metrics=%s\n" "$output"
+  printf "error=%s\n" "$(tr '\n' ' ' < "$error_file" | cut -c 1-160)"
+
+  rm -f "$error_file"
 }
 
 port_is_open() {
@@ -114,13 +129,18 @@ if [[ "${1:-}" == "--set-threshold" ]]; then
 fi
 
 BAD_MS="$(current_bad_ms)"
-result="$(probe_openai)"
-curl_status=$?
+probe_output="$(probe_openai)"
+curl_status="$(awk -F= '$1 == "status" { print $2 }' <<< "$probe_output")"
+metrics="$(awk -F= '$1 == "metrics" { print substr($0, index($0, "=") + 1) }' <<< "$probe_output")"
+error_text="$(awk -F= '$1 == "error" { print substr($0, index($0, "=") + 1) }' <<< "$probe_output")"
 
-http_code="$(awk '{ print $1 }' <<< "$result")"
-time_total="$(awk '{ print $2 }' <<< "$result")"
-remote_ip="$(awk '{ print $3 }' <<< "$result")"
-error_text=""
+if [[ -z "$curl_status" ]]; then
+  curl_status=1
+fi
+
+http_code="$(awk '{ print $1 }' <<< "$metrics")"
+time_total="$(awk '{ print $2 }' <<< "$metrics")"
+remote_ip="$(awk '{ print $3 }' <<< "$metrics")"
 
 if [[ "$curl_status" -ne 0 || -z "$http_code" || "$http_code" == "000" ]]; then
   previous_failures="$(read_failure_streak)"
@@ -137,7 +157,7 @@ if [[ "$curl_status" -ne 0 || -z "$http_code" || "$http_code" == "000" ]]; then
     color="$COLOR_MUTED"
   fi
 
-  error_text="$(sed 's/[|]//g' <<< "$result" | tr '\n' ' ' | cut -c 1-160)"
+  error_text="$(sed 's/[|]//g' <<< "$error_text")"
   latency_ms="-"
 else
   write_failure_streak 0
