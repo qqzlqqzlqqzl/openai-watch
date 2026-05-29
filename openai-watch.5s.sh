@@ -62,6 +62,37 @@ set_bad_ms() {
   printf "bad_ms=%s\n" "$value" > "$CONFIG_FILE"
 }
 
+current_interval() {
+  local basename
+  basename="$(basename "$0")"
+
+  if [[ "$basename" =~ \.([0-9]+s)\.sh$ ]]; then
+    printf "%s" "${BASH_REMATCH[1]}"
+  else
+    printf "unknown"
+  fi
+}
+
+set_interval() {
+  local interval="$1"
+  local current_path="$0"
+  local current_dir
+  local new_path
+
+  case "$interval" in
+    5s|10s|30s|60s) ;;
+    *) exit 2 ;;
+  esac
+
+  current_dir="$(dirname "$current_path")"
+  new_path="${current_dir}/openai-watch.${interval}.sh"
+
+  if [[ "$current_path" != "$new_path" ]]; then
+    mv "$current_path" "$new_path"
+    chmod +x "$new_path"
+  fi
+}
+
 read_failure_streak() {
   if [[ -f "$STATE_FILE" ]]; then
     awk -F= '$1 == "failures" { print $2 + 0 }' "$STATE_FILE" 2>/dev/null
@@ -128,7 +159,13 @@ if [[ "${1:-}" == "--set-threshold" ]]; then
   exit 0
 fi
 
+if [[ "${1:-}" == "--set-interval" ]]; then
+  set_interval "${2:-}"
+  exit 0
+fi
+
 BAD_MS="$(current_bad_ms)"
+INTERVAL="$(current_interval)"
 probe_output="$(probe_openai)"
 curl_status="$(awk -F= '$1 == "status" { print $2 }' <<< "$probe_output")"
 metrics="$(awk -F= '$1 == "metrics" { print substr($0, index($0, "=") + 1) }' <<< "$probe_output")"
@@ -185,6 +222,7 @@ printf -- "---\n"
 printf "Status: %s | color=%s\n" "$status" "$color"
 printf "Latency: %sms\n" "$latency_ms"
 printf "Red threshold: %sms\n" "$BAD_MS"
+printf "Check interval: %s\n" "$INTERVAL"
 printf "HTTP: %s\n" "${http_code:-unknown}"
 printf "Remote IP: %s\n" "${remote_ip:-unknown}"
 printf "Target: %s | href=%s\n" "$TARGET_URL" "$TARGET_URL"
@@ -202,6 +240,12 @@ printf "1.5s strict%s | bash=%s param1=--set-threshold param2=1500 terminal=fals
 printf "2s normal%s | bash=%s param1=--set-threshold param2=2000 terminal=false refresh=true\n" "$([[ "$BAD_MS" == "2000" ]] && printf " ✓")" "$SCRIPT_FOR_XBAR"
 printf "3s relaxed%s | bash=%s param1=--set-threshold param2=3000 terminal=false refresh=true\n" "$([[ "$BAD_MS" == "3000" ]] && printf " ✓")" "$SCRIPT_FOR_XBAR"
 printf "5s very relaxed%s | bash=%s param1=--set-threshold param2=5000 terminal=false refresh=true\n" "$([[ "$BAD_MS" == "5000" ]] && printf " ✓")" "$SCRIPT_FOR_XBAR"
+printf -- "---\n"
+printf "Check interval\n"
+printf "5s%s | bash=%s param1=--set-interval param2=5s terminal=false refresh=true\n" "$([[ "$INTERVAL" == "5s" ]] && printf " ✓")" "$SCRIPT_FOR_XBAR"
+printf "10s%s | bash=%s param1=--set-interval param2=10s terminal=false refresh=true\n" "$([[ "$INTERVAL" == "10s" ]] && printf " ✓")" "$SCRIPT_FOR_XBAR"
+printf "30s%s | bash=%s param1=--set-interval param2=30s terminal=false refresh=true\n" "$([[ "$INTERVAL" == "30s" ]] && printf " ✓")" "$SCRIPT_FOR_XBAR"
+printf "60s%s | bash=%s param1=--set-interval param2=60s terminal=false refresh=true\n" "$([[ "$INTERVAL" == "60s" ]] && printf " ✓")" "$SCRIPT_FOR_XBAR"
 printf -- "---\n"
 printf "Refresh | refresh=true\n"
 printf "Open OpenAI status | href=https://status.openai.com/\n"
