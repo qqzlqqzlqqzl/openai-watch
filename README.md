@@ -1,10 +1,15 @@
 # OpenAI Watch
 
-A tiny xbar / SwiftBar menu bar plugin for monitoring whether your Mac can reach
-the OpenAI API through the current VPN or proxy route.
+Cross-platform repository for monitoring whether your network can reach an OpenAI
+compatible API endpoint through your current VPN/proxy route.
 
-It is intentionally simple: it stays green while OpenAI responds within your
-chosen threshold, and turns red when the route is too slow or down.
+This repo now contains:
+
+- `openai-watch.5s.sh`: macOS menu bar plugin for [xbar/SwiftBar].
+- `windows/`: Windows tray application built with WinForms (standalone `EXE` + source/build scripts).
+
+The behavior intent is the same: green indicates normal latency, red indicates slow
+or failing checks, and gray indicates one transient miss.
 
 ## What it shows
 
@@ -17,6 +22,8 @@ HTTP `401` is treated as reachable because the request reached OpenAI without an
 API key. This plugin checks connectivity and latency, not account permissions.
 
 ## Install
+
+### macOS (xbar / SwiftBar)
 
 Install xbar:
 
@@ -34,6 +41,13 @@ open -a xbar
 ```
 
 SwiftBar users can copy the same script into their SwiftBar plugin folder.
+
+### Windows
+
+See `windows/README.md` for build/run instructions:
+
+- Standalone exe built by `windows\\build-exe.ps1`.
+- Launch through `windows\\Run-OpenAI-Watch-EXE.cmd`.
 
 ## Thresholds
 
@@ -58,6 +72,9 @@ OPENAI_WATCH_TIMEOUT=4
 OPENAI_WATCH_BAD_MS=2000
 OPENAI_WATCH_PROXY_PORTS="7890 7897 1080 8080 6152"
 ```
+
+On Windows, settings are persisted to `%APPDATA%\OpenAI Watch\config.ini`.
+On macOS, settings are persisted to `~/.config/openai-watch/config`.
 
 ## License
 
