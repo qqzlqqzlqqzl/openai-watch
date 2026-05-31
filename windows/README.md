@@ -17,25 +17,11 @@ connectivity and latency check, not an account-permission check.
 Double-click:
 
 ```text
-Run-OpenAI-Watch.cmd
+Run-OpenAI-Watch-EXE.cmd
 ```
 
 Right-click the tray icon to change the red threshold, change the check interval,
 refresh immediately, open the OpenAI status page, or exit.
-
-## Install at Startup
-
-Run this from PowerShell:
-
-```powershell
-powershell.exe -ExecutionPolicy Bypass -File .\Install-Startup.ps1
-```
-
-Remove the startup shortcut:
-
-```powershell
-powershell.exe -ExecutionPolicy Bypass -File .\Install-Startup.ps1 -Remove
-```
 
 ## Settings
 
