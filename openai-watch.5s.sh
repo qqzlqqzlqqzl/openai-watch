@@ -17,7 +17,8 @@
 
 set -u
 
-TARGET_URL="${OPENAI_WATCH_URL:-https://api.openai.com/v1/models}"
+DEFAULT_TARGET_URL="https://api.openai.com/v1/models"
+ENV_TARGET_URL="${OPENAI_WATCH_URL:-}"
 TIMEOUT="${OPENAI_WATCH_TIMEOUT:-4}"
 DEFAULT_BAD_MS="${OPENAI_WATCH_BAD_MS:-2000}"
 PROXY_PORTS="${OPENAI_WATCH_PROXY_PORTS:-7890 7897 1080 8080 6152}"
@@ -34,9 +35,20 @@ now_iso() {
   date "+%Y-%m-%d %H:%M:%S"
 }
 
-read_bad_ms() {
+read_config_value() {
+  local key="$1"
+
   if [[ -f "$CONFIG_FILE" ]]; then
-    awk -F= '$1 == "bad_ms" && $2 ~ /^[0-9]+$/ { print $2; found=1 } END { if (!found) print "" }' "$CONFIG_FILE" 2>/dev/null
+    awk -F= -v key="$key" '$1 == key { print substr($0, index($0, "=") + 1); found=1 } END { if (!found) print "" }' "$CONFIG_FILE" 2>/dev/null
+  fi
+}
+
+read_bad_ms() {
+  local value
+  value="$(read_config_value "bad_ms")"
+
+  if [[ "$value" =~ ^[0-9]+$ ]]; then
+    printf "%s" "$value"
   fi
 }
 
@@ -51,6 +63,30 @@ current_bad_ms() {
   fi
 }
 
+current_target_url() {
+  local saved
+
+  if [[ -n "$ENV_TARGET_URL" ]]; then
+    printf "%s" "$ENV_TARGET_URL"
+    return
+  fi
+
+  saved="$(read_config_value "target_url")"
+  if [[ -n "$saved" ]]; then
+    printf "%s" "$saved"
+  else
+    printf "%s" "$DEFAULT_TARGET_URL"
+  fi
+}
+
+write_config() {
+  local bad_ms="$1"
+  local target_url="$2"
+
+  mkdir -p "$CONFIG_DIR"
+  printf "bad_ms=%s\ntarget_url=%s\n" "$bad_ms" "$target_url" > "$CONFIG_FILE"
+}
+
 set_bad_ms() {
   local value="$1"
 
@@ -58,8 +94,18 @@ set_bad_ms() {
     exit 2
   fi
 
-  mkdir -p "$CONFIG_DIR"
-  printf "bad_ms=%s\n" "$value" > "$CONFIG_FILE"
+  write_config "$value" "$(current_target_url)"
+}
+
+set_target_url() {
+  local value="$1"
+
+  case "$value" in
+    https://api.openai.com/v1/models|https://status.openai.com/api/v2/status.json|https://chatgpt.com/) ;;
+    *) exit 2 ;;
+  esac
+
+  write_config "$(current_bad_ms)" "$value"
 }
 
 current_interval() {
@@ -164,7 +210,13 @@ if [[ "${1:-}" == "--set-interval" ]]; then
   exit 0
 fi
 
+if [[ "${1:-}" == "--set-target" ]]; then
+  set_target_url "${2:-}"
+  exit 0
+fi
+
 BAD_MS="$(current_bad_ms)"
+TARGET_URL="$(current_target_url)"
 INTERVAL="$(current_interval)"
 probe_output="$(probe_openai)"
 curl_status="$(awk -F= '$1 == "status" { print $2 }' <<< "$probe_output")"
@@ -226,6 +278,9 @@ printf "Check interval: %s\n" "$INTERVAL"
 printf "HTTP: %s\n" "${http_code:-unknown}"
 printf "Remote IP: %s\n" "${remote_ip:-unknown}"
 printf "Target: %s | href=%s\n" "$TARGET_URL" "$TARGET_URL"
+if [[ -n "$ENV_TARGET_URL" ]]; then
+  printf "Target source: OPENAI_WATCH_URL env override\n"
+fi
 printf "Local proxy ports open: %s\n" "$proxy_ports"
 printf "Last check: %s\n" "$(now_iso)"
 
@@ -246,6 +301,11 @@ printf "5s%s | bash=%s param1=--set-interval param2=5s terminal=false refresh=tr
 printf "10s%s | bash=%s param1=--set-interval param2=10s terminal=false refresh=true\n" "$([[ "$INTERVAL" == "10s" ]] && printf " ✓")" "$SCRIPT_FOR_XBAR"
 printf "30s%s | bash=%s param1=--set-interval param2=30s terminal=false refresh=true\n" "$([[ "$INTERVAL" == "30s" ]] && printf " ✓")" "$SCRIPT_FOR_XBAR"
 printf "60s%s | bash=%s param1=--set-interval param2=60s terminal=false refresh=true\n" "$([[ "$INTERVAL" == "60s" ]] && printf " ✓")" "$SCRIPT_FOR_XBAR"
+printf -- "---\n"
+printf "Target endpoint\n"
+printf "OpenAI API /v1/models%s | bash=%s param1=--set-target param2=https://api.openai.com/v1/models terminal=false refresh=true\n" "$([[ "$TARGET_URL" == "https://api.openai.com/v1/models" ]] && printf " ✓")" "$SCRIPT_FOR_XBAR"
+printf "OpenAI status JSON%s | bash=%s param1=--set-target param2=https://status.openai.com/api/v2/status.json terminal=false refresh=true\n" "$([[ "$TARGET_URL" == "https://status.openai.com/api/v2/status.json" ]] && printf " ✓")" "$SCRIPT_FOR_XBAR"
+printf "ChatGPT web%s | bash=%s param1=--set-target param2=https://chatgpt.com/ terminal=false refresh=true\n" "$([[ "$TARGET_URL" == "https://chatgpt.com/" ]] && printf " ✓")" "$SCRIPT_FOR_XBAR"
 printf -- "---\n"
 printf "Refresh | refresh=true\n"
 printf "Open OpenAI status | href=https://status.openai.com/\n"

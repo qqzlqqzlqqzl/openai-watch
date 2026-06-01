@@ -89,6 +89,16 @@ OPENAI_WATCH_PROXY_PORTS="7890 7897 1080 8080 6152"
 On Windows, settings are persisted to `%APPDATA%\OpenAI Watch\config.ini`.
 On macOS, settings are persisted to `~/.config/openai-watch/config`.
 
+## Target endpoints
+
+Open the menu and choose one of:
+
+- `OpenAI API /v1/models`: direct OpenAI API reachability check.
+- `OpenAI status JSON`: OpenAI status API reachability check.
+- `ChatGPT web`: ChatGPT web reachability check.
+
+If `OPENAI_WATCH_URL` is set, it overrides the menu-selected target for that run.
+
 ## License
 
 MIT

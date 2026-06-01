@@ -21,7 +21,7 @@ Run-OpenAI-Watch-EXE.cmd
 ```
 
 Right-click the tray icon to change the red threshold, change the check interval,
-refresh immediately, open the OpenAI status page, or exit.
+change the target endpoint, refresh immediately, open the OpenAI status page, or exit.
 
 ## Settings
 
@@ -39,7 +39,13 @@ interval_seconds=5
 target_url=https://api.openai.com/v1/models
 ```
 
-`target_url` supports either a full API endpoint or just a base URL.
+The tray menu includes these target presets:
+
+- `OpenAI API /v1/models`
+- `OpenAI status JSON`
+- `ChatGPT web`
+
+`target_url` also supports either a full API endpoint or just a base URL.
 
 - `https://api.openai.com/v1/models` uses this exact endpoint.
 - `https://openai-proxy.internal` will be auto-converted to `https://openai-proxy.internal/v1/models`.

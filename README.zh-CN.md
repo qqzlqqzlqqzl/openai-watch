@@ -82,6 +82,16 @@ OPENAI_WATCH_PROXY_PORTS="7890 7897 1080 8080 6152"
 Windows 设置保存在 `%APPDATA%\OpenAI Watch\config.ini`。
 macOS 设置保存在 `~/.config/openai-watch/config`。
 
+## 探测地址
+
+打开菜单后可以选择：
+
+- `OpenAI API /v1/models`：直接探测 OpenAI API。
+- `OpenAI status JSON`：探测 OpenAI 状态页 API。
+- `ChatGPT web`：探测 ChatGPT 网页可达性。
+
+如果设置了 `OPENAI_WATCH_URL` 环境变量，它会覆盖菜单里选择的探测地址。
+
 ## License
 
 MIT

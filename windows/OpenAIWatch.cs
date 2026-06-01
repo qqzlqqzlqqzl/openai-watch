@@ -65,7 +65,6 @@ namespace OpenAIWatch
         private readonly Icon okIcon;
         private readonly Icon badIcon;
         private readonly Icon mutedIcon;
-        private readonly string targetUrl;
         private readonly int timeoutSeconds;
         private readonly string proxyPortsRaw;
         private readonly string configDir;
@@ -83,6 +82,7 @@ namespace OpenAIWatch
         private ToolStripMenuItem errorItem;
         private ToolStripMenuItem[] thresholdChoices;
         private ToolStripMenuItem[] intervalChoices;
+        private ToolStripMenuItem[] targetChoices;
 
         private int badMs;
         private int intervalSeconds;
@@ -90,6 +90,7 @@ namespace OpenAIWatch
         private bool isChecking;
         private bool disposed;
         private string configuredTargetUrl;
+        private string targetUrl;
 
         public TrayApplication()
         {
@@ -180,6 +181,18 @@ namespace OpenAIWatch
 
             contextMenu.Items.Add(new ToolStripSeparator());
 
+            var targetMenu = new ToolStripMenuItem("Target endpoint");
+            targetChoices = new[]
+            {
+                TargetChoice("OpenAI API /v1/models", "https://api.openai.com/v1/models"),
+                TargetChoice("OpenAI status JSON", "https://status.openai.com/api/v2/status.json"),
+                TargetChoice("ChatGPT web", "https://chatgpt.com/")
+            };
+            targetMenu.DropDownItems.AddRange(targetChoices);
+            contextMenu.Items.Add(targetMenu);
+
+            contextMenu.Items.Add(new ToolStripSeparator());
+
             var refreshItem = new ToolStripMenuItem("Refresh");
             refreshItem.Click += delegate { CheckNow(); };
             contextMenu.Items.Add(refreshItem);
@@ -239,6 +252,21 @@ namespace OpenAIWatch
             {
                 intervalSeconds = (int)((ToolStripMenuItem)sender).Tag;
                 timer.Interval = intervalSeconds * 1000;
+                WriteSettings();
+                UpdateMenu(statusItem.Text.Replace("Status: ", ""), latencyItem.Text.Replace("Latency: ", ""), httpItem.Text.Replace("HTTP: ", ""), remoteIpItem.Text.Replace("Remote IP: ", ""), proxyItem.Text.Replace("Local proxy ports open: ", ""), "");
+                CheckNow();
+            };
+            return item;
+        }
+
+        private ToolStripMenuItem TargetChoice(string text, string value)
+        {
+            var item = new ToolStripMenuItem(text);
+            item.Tag = value;
+            item.Click += delegate(object sender, EventArgs e)
+            {
+                configuredTargetUrl = (string)((ToolStripMenuItem)sender).Tag;
+                targetUrl = ResolveTargetUrl(configuredTargetUrl, "https://api.openai.com/v1/models");
                 WriteSettings();
                 UpdateMenu(statusItem.Text.Replace("Status: ", ""), latencyItem.Text.Replace("Latency: ", ""), httpItem.Text.Replace("HTTP: ", ""), remoteIpItem.Text.Replace("Remote IP: ", ""), proxyItem.Text.Replace("Local proxy ports open: ", ""), "");
                 CheckNow();
@@ -414,6 +442,10 @@ namespace OpenAIWatch
             {
                 item.Checked = (int)item.Tag == intervalSeconds;
             }
+            foreach (var item in targetChoices)
+            {
+                item.Checked = String.Equals(ResolveTargetUrl((string)item.Tag, "https://api.openai.com/v1/models"), targetUrl, StringComparison.OrdinalIgnoreCase);
+            }
         }
 
         private string GetProxySummary()
@@ -518,7 +550,7 @@ namespace OpenAIWatch
                 configFile,
                 "bad_ms=" + badMs + Environment.NewLine +
                 "interval_seconds=" + intervalSeconds + Environment.NewLine +
-                "target_url=" + ResolveTargetUrl(configuredTargetUrl, "https://api.openai.com/v1/models") + Environment.NewLine);
+                "target_url=" + targetUrl + Environment.NewLine);
         }
 
         private void BeginUi(Action action)
