@@ -13,8 +13,8 @@ OpenAI Watch 是一个跨平台的小工具，用来监控当前网络、VPN 或
 
 ## Release 下载
 
-- [macOS release](https://github.com/qqzlqqzlqqzl/openai-watch/releases/tag/v0.2.0-macos)：xbar / SwiftBar 插件包。
-- [Windows release](https://github.com/qqzlqqzlqqzl/openai-watch/releases/tag/v0.2.0-windows)：Windows 托盘应用包。
+- [macOS release](https://github.com/qqzlqqzlqqzl/openai-watch/releases/tag/v0.3.0-macos)：xbar / SwiftBar 插件包。
+- [Windows release](https://github.com/qqzlqqzlqqzl/openai-watch/releases/tag/v0.3.0-windows)：Windows 源码与构建脚本包。
 
 ## 状态含义
 
@@ -29,7 +29,7 @@ HTTP `401` 会被视为“可连通”，因为这说明请求已经到达 OpenA
 
 ### macOS（xbar / SwiftBar）
 
-从 [macOS release](https://github.com/qqzlqqzlqqzl/openai-watch/releases/tag/v0.2.0-macos) 下载 `openai-watch-macos-v0.2.0.zip`，或者直接使用仓库里的源码脚本。
+从 [macOS release](https://github.com/qqzlqqzlqqzl/openai-watch/releases/tag/v0.3.0-macos) 下载 `openai-watch-macos-v0.3.0.zip`，或者直接使用仓库里的源码脚本。
 
 安装 xbar：
 
@@ -50,7 +50,7 @@ open -a xbar
 
 ### Windows
 
-从 [Windows release](https://github.com/qqzlqqzlqqzl/openai-watch/releases/tag/v0.2.0-windows) 下载 Windows 包，或者查看 `windows/README.md` 了解构建/运行方式：
+从 [Windows release](https://github.com/qqzlqqzlqqzl/openai-watch/releases/tag/v0.3.0-windows) 下载 Windows 源码与构建脚本包，或者查看 `windows/README.md` 了解构建/运行方式：
 
 - 独立 exe 由 `windows\\build-exe.ps1` 构建。
 - 通过 `windows\\Run-OpenAI-Watch-EXE.cmd` 启动。

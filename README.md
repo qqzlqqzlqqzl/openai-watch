@@ -15,8 +15,8 @@ or failing checks, and gray indicates one transient miss.
 
 ## Releases
 
-- [macOS release](https://github.com/qqzlqqzlqqzl/openai-watch/releases/tag/v0.2.0-macos): xbar / SwiftBar plugin package.
-- [Windows release](https://github.com/qqzlqqzlqqzl/openai-watch/releases/tag/v0.2.0-windows): Windows tray app package.
+- [macOS release](https://github.com/qqzlqqzlqqzl/openai-watch/releases/tag/v0.3.0-macos): xbar / SwiftBar plugin package.
+- [Windows release](https://github.com/qqzlqqzlqqzl/openai-watch/releases/tag/v0.3.0-windows): Windows source package.
 
 ## What it shows
 
@@ -32,8 +32,8 @@ API key. This plugin checks connectivity and latency, not account permissions.
 
 ### macOS (xbar / SwiftBar)
 
-Download `openai-watch-macos-v0.2.0.zip` from the
-[macOS release](https://github.com/qqzlqqzlqqzl/openai-watch/releases/tag/v0.2.0-macos),
+Download `openai-watch-macos-v0.3.0.zip` from the
+[macOS release](https://github.com/qqzlqqzlqqzl/openai-watch/releases/tag/v0.3.0-macos),
 or use the source file in this repo.
 
 Install xbar:
@@ -56,7 +56,7 @@ SwiftBar users can copy the same script into their SwiftBar plugin folder.
 ### Windows
 
 Download the Windows package from the
-[Windows release](https://github.com/qqzlqqzlqqzl/openai-watch/releases/tag/v0.2.0-windows),
+[Windows release](https://github.com/qqzlqqzlqqzl/openai-watch/releases/tag/v0.3.0-windows),
 or see `windows/README.md` for build/run instructions:
 
 - Standalone exe built by `windows\\build-exe.ps1`.
