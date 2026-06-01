@@ -1,5 +1,7 @@
 # OpenAI Watch
 
+[English](README.md) | [中文](README.zh-CN.md)
+
 Cross-platform repository for monitoring whether your network can reach an OpenAI
 compatible API endpoint through your current VPN/proxy route.
 
@@ -10,6 +12,11 @@ This repo now contains:
 
 The behavior intent is the same: green indicates normal latency, red indicates slow
 or failing checks, and gray indicates one transient miss.
+
+## Releases
+
+- [macOS release](https://github.com/qqzlqqzlqqzl/openai-watch/releases/tag/v0.2.0-macos): xbar / SwiftBar plugin package.
+- [Windows release](https://github.com/qqzlqqzlqqzl/openai-watch/releases/tag/v0.2.0-windows): Windows tray app package.
 
 ## What it shows
 
@@ -24,6 +31,10 @@ API key. This plugin checks connectivity and latency, not account permissions.
 ## Install
 
 ### macOS (xbar / SwiftBar)
+
+Download `openai-watch-macos-v0.2.0.zip` from the
+[macOS release](https://github.com/qqzlqqzlqqzl/openai-watch/releases/tag/v0.2.0-macos),
+or use the source file in this repo.
 
 Install xbar:
 
@@ -44,7 +55,9 @@ SwiftBar users can copy the same script into their SwiftBar plugin folder.
 
 ### Windows
 
-See `windows/README.md` for build/run instructions:
+Download the Windows package from the
+[Windows release](https://github.com/qqzlqqzlqqzl/openai-watch/releases/tag/v0.2.0-windows),
+or see `windows/README.md` for build/run instructions:
 
 - Standalone exe built by `windows\\build-exe.ps1`.
 - Launch through `windows\\Run-OpenAI-Watch-EXE.cmd`.
